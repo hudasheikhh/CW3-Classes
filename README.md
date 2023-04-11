@@ -1,5 +1,6 @@
 # classes
-
+## Coursework 3 individual repositiory link 
+https://github.com/hudasheikhh/CW3-Classes
 ## Project setup
 ```
 npm install
