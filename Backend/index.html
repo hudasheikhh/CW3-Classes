@@ -1,19 +1,31 @@
-<template>
- <div id="app">
+<html>
+
+<head>
+    <title> Tuition </title>
+    <!-- Title -->
+    <!--stylesheet and vue.js links -->
+    <link rel="stylesheet" type="text/css" href="public/Style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.js"></script>
+
+</head>
+
+<body>
+    <div id="app">
         <!-- The element where Vue will mount our application -->
         <header>
             <h1 v-text="sitename"> </h1>
 
-           
+            <!-- Adding Checkout button -->
             <div class="checkoutbutton">
                 <button v-on:click="showCheckout">  
-                {{cartItemCount}}    
-               CheckOut <span class="fas fa-shopping-cart"> </span> 
+                {{cartItemCount}}     <!-- 'cartItemCount' is used the same way as a data property. -->
+               CheckOut <span class="fas fa-shopping-cart"> </span>  <!--Checkout button icon-->
             </button> </div>
 
 
         </header>
-    
+        <main>
 
             <!--the code to sort the products by subject, location, prices and spaces-->
             <div v-if="showProducts">
@@ -45,11 +57,32 @@
 
                 </div>
 
+                <!--the code for searching the courses-->
+                <div v-if="checkBar">
+                    <!--To display the ProductList-->
+                    <div v-for="(products, index) in ProductList" :key="index">
+
+                        <fieldset>
+                            <!-- products information -->
+                            <!-- bind the 'src' attribute to the 'product.image' in 'data' -->
+                            <img v-bind:src="products.img" alt="" height="200px" width="200px">
+                            <h2 v-text="products.subject"></h2>
+
+                            <!-- The double curly brackets is the shorter version of 'v-text' -->
+                            <p>Price: {{ products.price }}</p>
+                            <p>Location: {{ products.location }}</p>
+                            <p>Spaces: {{ products.dSpace }}</p>
+                            <!-- Add to Cart Button -->
+                            <button v-on:click="addToCart(products)" v-bind:disabled="!canAddToCart(products)"> <!-- This button will be displayed when 'canAddToCart' is True -->
+                              Add to Cart   <i class="fas fa-shopping-cart"></i>  <!--add to cart icon -->
+                            </button>
+                        </fieldset>
+                    </div>
+                </div>
+
                 <!-- the code for the product page -->
                 <!--To display the ProductList-->
-                <div v-if="checkBar">
-                       <div v-for="(products, index) in ProductList" :key="index">
-                
+                <div v-for="products in sortedProducts">
 
                     <fieldset>
                         <!-- products information -->
@@ -69,70 +102,72 @@
             </div>
 
             <!-- the code for the checkout page -->
-            <!-- Lessons Display -->
-      <product-list
-        :cart="cart"
-        :products="products"
-        :sortedProducts="sortedProducts"
-        @addProduct="addToCart"
-      />
+            <div v-else class="checkout">
+
+                <h3>My CheckOut Page</h3>
+
+                <p>
+                    <strong> Name : </strong>
+                    <!-- This input field is bound to 'Name' in the 'order' object -->
+                    <input v-model.trim="order.Name" />
+                </p>
+                <p>
+                    <strong> Phone No : </strong>
+                    <!-- This input field is bound to 'Phone number' in the 'order' object -->
+                    <input v-model.trim="order.PhoneNo" />
+                </p>
+                <!--Button for placing orders -->
+                <button v-on:click="submitForm">PLACE ORDER</button>
+
+
+                <!--To display products on the checkout page with the product info -->
+                <div v-for="products in showCart">
+
+                    <fieldset>
+                        <!-- products information -->
+                        <h2 v-text="products"></h2>
+
+                        <button v-on:click="removeClass(products)">   <!--To remove products from the checkout page-->
+                                Remove
+                            </button>
+
+                    </fieldset>
+                </div>
+            </div>
+        </main>
     </div>
-    
-    <!-- Checkout Page Display -->
-    <div v-else class="checkout">
-      <checkout
-        :cart="cart"
-        :products="products"
-        :order="order"
-        :showCart="showCart"
-        @removeClass="removeClass"
-        @submitForm="submitForm"
-      />
-    </div>
-        
-    </div>
 
-  
-</template>
+    <script type="text/javascript">
+        var webstore = new Vue({ // The Vue constructor
+            el: '#app', // The 'option object': DOM mounting point
+            data: { // storing the data
+                sitename: 'Courses', //naming the sitename
 
-<script>
-import productList from "./components/ProductList.vue";
-import checkout from "./components/Form.vue";
-export default {
-  name: "App",
-  components: { productList, checkout },
-   data() { 
-    return {// storing the data
-   sitename: "Courses", //naming the sitename
+                // The first 'products' is a Vue property // The second products is the array from the 'products.js'
+                products: [],
 
-  // The first 'products' is a Vue property // The second products is the array from the 'products.js'
-  products: [],
 
-                // products: {   
-                //     id: 1001,
-                //     subject: "Math",
-                //     location: "London",
-                //     price: 100,
-                //     spaces: 10,
-                // },
 
-  cart: [], // array to store items in shopping cart
-  SearchCourse: "",
-  searchInput: "",
+                cart: [], // array to store items in shopping cart
+                SearchCourse: '',
+                searchInput: "",
                 checkBar: false,
 
                 showProducts: true, //To display the product page
                 order: {
-                    Name: "",
-                    PhoneNo: "",
+
+                    Name: '',
+                    PhoneNo: ''
 
                 },
                 classA: "Subject",
                 classB: "a",
-            };
-   },
 
-   methods: { // this is the 'methods' option. It value has a function.
+
+            },
+
+            // the 'methods' of Vue instance
+            methods: { // this is the 'methods' option. It value has a function.
 
                 addToCart(products) { //Adding products to the checkout page with decreasing spaces
 
@@ -142,9 +177,8 @@ export default {
                     this.cart.push(products.id);
                     console.log(this.cart);
                 },
-    //To display CheckOut Page
 
-    showCheckout() { //confirming checkout products
+                showCheckout() { //confirming checkout products
                     this.showProducts = this.showProducts ? false : true; //turnary operator  - if else statement
                 },
 
@@ -152,12 +186,32 @@ export default {
                     this.checkBar = true;
                 },
 
-    // To place an order
-   submitForm() { // Confirming the order  and to display an alert message
+                submitForm() { // Confirming the order  and to display an alert message 
+
+                    // fetch is a method to send a post request to the server, it take two arguments the URL of the server and an object with details about the request.
+                    // The object includes a method property which is set to POST, indicating that this is a post request. 
+
+
+                    fetch("http://localhost:3000/collection/order", {
+                            method: "POST",
+                            body: JSON.stringify({ //The body property is set to a stringified version of a JSON object which includes the details of the order, such as the classes, total courses, name, and phone.
+                                products: this.cartName,
+                                NumberofClasses: this.cart.length,
+                                name: this.order.Name,
+                                phone: this.order.PhoneNo,
+
+                            }),
+                            headers: { //The headers property is an object which includes the content type of the request.
+                                "Content-type": "application/json; charset=UTF-8",
+                            },
+                        })
+                        .then((response) => response.json()) // This method takes the response and converts it into a JSON object. 
+                        .then((json) => console.log(json)) //This method prints the JSON object in the console
+                        .catch((error) => console.error(error)); // This method logs any errors that occur while sending the request.
                     alert('Order submitted!')
                 },
-  
-    cartCount(id) { // Numbers of product added to the cart is counted by product id
+
+                cartCount(id) { // Numbers of product added to the cart is counted by product id
                     let count = 0;
                     for (let i = 0; i < this.cart.length; i++) {
                         if (this.cart[i] === id) {
@@ -167,11 +221,15 @@ export default {
                     return count;
                 },
 
-    canAddToCart(products) { //To disabled add to cart when there is no spaces left 
+                canAddToCart(products) { //To disabled add to cart when there is no spaces left 
                     return products.spaces > this.cartCount(products.id);
                 },
-    
-   removeClass(products) { //To remove products from the cart 
+
+                emptyCart(products) { //To empty the carts- If the cartItemCount is 0, the function will return true, indicating that the cart is empty. If the cartItemCount is anything other than 0, the function will return false, indicating that the cart has items in it.
+                    return this.cartItemCount == 0;
+                },
+
+                removeClass(products) { //To remove products from the cart 
                     for (let j = 0; j < this.products.length; j++) {
                         if (products === this.products[j].subject) {
                             const index = this.cart.indexOf(this.products[j].id);
@@ -183,13 +241,15 @@ export default {
                             this.products[j].dSpace += 1;
                         }
                     }
-                },
-                 sortedProducts() { // the propety name // its value is calculated when it is called
+                }
+            },
+
+            computed: {
+
+                sortedProducts() { // the propety name // its value is calculated when it is called
 
                     //The sorting is done here as per the ProductList courses
-                    let a;
-                    let b;
-                    let compare;
+
                     //Asending and Descending order for all the courses
                     if (this.classB == "a") {
                         a = 1;
@@ -201,7 +261,7 @@ export default {
 
                     //Sorting based on the each Subject
                     if (this.classA == "Subject") {
-                       compare =  function(x, y) {
+                        function compare(x, y) {
                             if (x.subject > y.subject)
                                 return a;
                             if (x.subject < y.subject)
@@ -211,7 +271,7 @@ export default {
 
                         //Sorting based on the each Location 
                     } else if (this.classA == "Location") {
-                        compare = function (x, y) {
+                        function compare(x, y) {
                             if (x.location > y.location)
                                 return a;
                             if (x.location < y.location)
@@ -221,7 +281,7 @@ export default {
 
                         //Sorting based on the each Price which low to high or high to low
                     } else if (this.classA == "Price") {
-                      compare =  function (x, y) {
+                        function compare(x, y) {
                             if (x.price > y.price)
                                 return a;
                             if (x.price < y.price)
@@ -232,7 +292,7 @@ export default {
                         //Sorting based on the Space decreased for each product
                     } else if (this.classA == "Space") {
                         // x and y is instances of the products
-                       compare = function (x, y) {
+                        function compare(x, y) {
                             if (x.dSpace > y.dSpace)
                                 return a;
                             if (x.dSpace < y.dSpace)
@@ -243,69 +303,6 @@ export default {
                     return this.products.sort(compare); //returning the sort values as true
 
                 },
-            },
-
-
-
- computed: {
-
-                // sortedProducts() { // the propety name // its value is calculated when it is called
-
-                //     //The sorting is done here as per the ProductList courses
-
-                //     //Asending and Descending order for all the courses
-                //     if (this.classB == "a") {
-                //         a = 1;
-                //         b = -1;
-                //     } else if (this.classB == "d") {
-                //         a = -1;
-                //         b = 1;
-                //     }
-
-                //     //Sorting based on the each Subject
-                //     if (this.classA == "Subject") {
-                //         function compare(x, y) {
-                //             if (x.subject > y.subject)
-                //                 return a;
-                //             if (x.subject < y.subject)
-                //                 return b;
-                //             return 0;
-                //         }
-
-                //         //Sorting based on the each Location 
-                //     } else if (this.classA == "Location") {
-                //         function compare(x, y) {
-                //             if (x.location > y.location)
-                //                 return a;
-                //             if (x.location < y.location)
-                //                 return b;
-                //             return 0;
-                //         }
-
-                //         //Sorting based on the each Price which low to high or high to low
-                //     } else if (this.classA == "Price") {
-                //         function compare(x, y) {
-                //             if (x.price > y.price)
-                //                 return a;
-                //             if (x.price < y.price)
-                //                 return b;
-                //             return 0;
-                //         }
-
-                //         //Sorting based on the Space decreased for each product
-                //     } else if (this.classA == "Space") {
-                //         // x and y is instances of the products
-                //         function compare(x, y) {
-                //             if (x.dSpace > y.dSpace)
-                //                 return a;
-                //             if (x.dSpace < y.dSpace)
-                //                 return b;
-                //             return 0;
-                //         }
-                //     }
-                //     return this.products.sort(compare); //returning the sort values as true
-
-                // },
 
                 cartItemCount: function() { //Returning the value of data properties
                     return this.cart.length || "";
@@ -341,135 +338,24 @@ export default {
                     return this.products
                 }
             },
-       
 
-  created: function() {
+            created: function() {
                 // retrieving data from the server
-                const store = this;
                 fetch("http://localhost:3000/collection/classes").then(function(response) {
                     response.json().then(function(json) { //The fetch() method returns a response, which is then passed to the .json() method in order to convert the response into a JSON object. The JSON object is then stored in the webstore.products property.
                         // storing the response
-                        store.products = json;
+                        webstore.products = json;
                     });
                 });
-            }};
-</script>
+            },
 
+        });
 
-<style>
-/* Css for courses website */
+        //The fetch() method returns a response, which is then passed to the .json() method in order to convert the response into a JSON object. The JSON object is then stored in the webstore.products property.
+        //The fetch() method is a JavaScript API used to make requests to servers. 
+        //It's a modern substitute for the XMLHttpRequest object and provides an easy way to retrieve data from a server. 
+        //The .json() method is used to convert the response from fetch() into a JSON object, which makes it easier to access the data.
+    </script>
+</body>
 
-* {
-    margin: 0;
-    box-sizing: border-box;
-    list-style-type: none;
-    text-decoration: none;
-}
-
-header {
-    width: 100%;
-    height: 10vh;
-    text-align: center;
-}
-
-.checkoutButton {
-    margin-left: 1200px;
-}
-
-h1 {
-    padding-top: 30px;
-    padding-bottom: 30px;
-    font-size: 50px;
-    font-style: italic;
-}
-
-body {
-    background-color: #80BD9E;
-    color: whitesmoke;
-}
-
-.search {
-    margin-left: 1150px;
-    padding-top: -30px;
-    font-size: large;
-}
-
-.search input {
-    font-size: 15px;
-    padding-left: 10px;
-    padding-right: 10px;
-}
-
-.courses {
-    border: 2px solid #6E612F;
-    font-size: 20px;
-}
-
-.sort {
-    padding-left: 60px;
-    padding-top: 65px;
-    padding-bottom: 20px;
-    font-size: 20px;
-}
-
-.form-control {
-    border: 2px solid #6E612F;
-    font-size: 17px;
-}
-
-.order {
-    padding-left: 60px;
-    padding-top: -20px;
-    padding-bottom: 30px;
-    font-size: 20px;
-}
-
-button {
-    border: 2px solid #6E612F;
-    border-radius: 3px;
-    box-sizing: border-box;
-    background-color: white;
-    font-size: medium;
-}
-
-fieldset {
-    background-color: #E3C598;
-    border: 3px solid #6E612F;
-    border-radius: 3px;
-    box-sizing: border-box;
-    width: 50%;
-    padding: 10px;
-    width: 120px;
-    height: fit-content;
-    margin: 10px;
-    margin-left: 50px;
-    float: left;
-    margin-bottom: 40px;
-    color: black;
-}
-
-h2 {
-    font-size: 20px;
-}
-
-h3 {
-    text-align: center;
-    font-size: 22px;
-    padding-bottom: 10px;
-    padding-top: 40px;
-}
-
-.checkout {
-    text-align: center;
-    font-size: 20px;
-}
-
-.checkout p {
-    margin: 30px;
-    font-size: 20px;
-}
-
-.checkoutButton {
-    padding-bottom: -40px;
-}
-</style>
+</html>
